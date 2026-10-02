@@ -1,0 +1,9 @@
+# folders
+dist/
+.build/
+.swiftpm/
+
+# files
+*.xcodeproj
+.DS_Store
+.build-stage.*/

@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Checks
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint
+        run: make lint
+      - name: Check Formatting
+        run: make format-check
+      - name: Test
+        run: make test
+      - name: Build
+        run: make build
+
+  release:
+    name: GitHub Release
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: github-release
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Release
+        uses: cycjimmy/semantic-release-action@v6.0.0
+        with:
+          semantic_version: 25.0.9
+          extra_plugins: |
+            @semantic-release/exec@7.1.0
+            @semantic-release/git@10.0.1
+            conventional-changelog-conventionalcommits@9.3.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

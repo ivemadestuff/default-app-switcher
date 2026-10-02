@@ -1,0 +1,33 @@
+{
+  "branches": ["master"],
+  "tagFormat": "v${version}",
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits"
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits"
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "verifyConditionsCmd": "bash scripts/check.sh",
+        "prepareCmd": "bash scripts/version.sh \"${nextRelease.version}\""
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["app/Sources/Core/AppMetadata.swift"],
+        "message": "chore: release ${nextRelease.version}"
+      }
+    ],
+    "@semantic-release/github"
+  ]
+}
